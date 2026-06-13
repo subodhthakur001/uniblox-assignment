@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "Uniblox Ecommerce API",
+    "_postman_id": "uniblox-ecommerce-api",
+    "description": "Complete API collection for the in-memory ecommerce backend with discount system.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "cartId",
+      "value": "my-cart-1",
+      "type": "string"
+    },
+    {
+      "key": "discountCode",
+      "value": "",
+      "type": "string",
+      "description": "Paste a minted code here after calling POST /admin/discount-code"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "GET /products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            },
+            "description": "Returns the full seeded product catalog."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "POST /cart/items — add item",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"productId\": \"prod_001\",\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "items"]
+            },
+            "description": "Add a product to a cart. Creates the cart if it doesn't exist. Merges quantities if the product is already in the cart."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /cart/items — add second product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"productId\": \"prod_002\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "items"]
+            },
+            "description": "Add a second product to the same cart."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /cart/items — invalid quantity (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"productId\": \"prod_001\",\n  \"quantity\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "items"]
+            },
+            "description": "Expects 400 InvalidQuantity."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /cart/items — unknown product (404)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"productId\": \"prod_999\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "items"]
+            },
+            "description": "Expects 404 ProductNotFound."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /cart/:cartId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/{{cartId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "{{cartId}}"]
+            },
+            "description": "Fetch the current state of a cart."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /cart/:cartId — not found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cart/nonexistent-cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["cart", "nonexistent-cart"]
+            },
+            "description": "Expects 404 CartNotFound."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "POST /checkout — no discount",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout"]
+            },
+            "description": "Checkout without a discount code. Returns a 201 order with discountCents: 0."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /checkout — with discount code",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"discountCode\": \"{{discountCode}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout"]
+            },
+            "description": "Checkout with a valid discount code. Set the `discountCode` collection variable first."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /checkout — empty cart (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"empty-cart\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout"]
+            },
+            "description": "Expects 400 EmptyCart."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /checkout — invalid code (400)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cartId\": \"{{cartId}}\",\n  \"discountCode\": \"FAKECODE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/checkout",
+              "host": ["{{baseUrl}}"],
+              "path": ["checkout"]
+            },
+            "description": "Expects 400 InvalidDiscountCode."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "POST /admin/discount-code — mint code",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/discount-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "discount-code"]
+            },
+            "description": "Mint a new discount code. Only succeeds when floor(orderCount / NTH_ORDER) - codesIssued > 0. Copy the returned `code` string into the `discountCode` collection variable."
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/discount-code — not eligible (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/discount-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "discount-code"]
+            },
+            "description": "Called when no milestone is pending. Expects 400 NotEligible."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "stats"]
+            },
+            "description": "Returns itemsPurchased, totalRevenueCents (net of discounts), totalDiscountCents, and the list of all discount codes. Invariant: totalRevenueCents + totalDiscountCents === sum of all order subtotals."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
